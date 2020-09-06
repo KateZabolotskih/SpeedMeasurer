@@ -121,32 +121,36 @@ void lidarSumulator (float V, float A, float B, float C, float D) {
     while (train == weel_1) {
         signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        cur_time = std::time(nullptr);
-        if (t2 <= start_time - cur_time) {
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
+        std::cout << "delta=" << delta << std::endl;
+        if (t1 <= delta) {
             train = gap;
         }
     }
     while (train == gap) {
         signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        cur_time = std::time(nullptr);
-        if (t3 <= start_time - cur_time) {
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
+        std::cout << "delta=" << delta << std::endl;
+        if (t1 <= delta) {
             train = weel_2;
         }
     }
     while (train == weel_2) {
         signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        cur_time = std::time(nullptr);
-        if (t4 <= start_time - cur_time) {
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
+        std::cout << "delta=" << delta << std::endl;
+        if (t1 <= delta) {
             train = gone;
         }
     }
     while (train == gone) {
         signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        cur_time = std::time(nullptr);
-        if (t5 <= start_time - cur_time) {
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
+        std::cout << "delta=" << delta << std::endl;
+        if (t1 <= delta) {
             train = stop;
         }
     }
@@ -154,7 +158,7 @@ void lidarSumulator (float V, float A, float B, float C, float D) {
 }
 
 int main(int argc, char* argv[]) {
-    lidarSumulator(90, 3, 0.5, 3, 0.5);
+    lidarSumulator(1000, 3, 0.5, 3, 0.5);
 
 }
 
