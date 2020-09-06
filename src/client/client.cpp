@@ -10,9 +10,11 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <iostream>
 #include "client.h"
+#include <ctime>
 
 using namespace boost::asio;
 using boost::system::error_code;
+
 io_service service;
 
 std::ostream& operator<<(std::ostream & out, const Measure & measure)
@@ -49,21 +51,101 @@ void sync_echo(Measure & measure) {
     sock.close();
 }
 
-int main(int argc, char* argv[]) {
-    // connect several clients
-    Measure measure1{123, 12.3,5.4},
-            measure2{124, 14.3, 13.22222},
-            measure3{125, 8.4429438274, 7.2323};
+float getRandomNumber(float min, float max) {
+    static const float fraction = 1.0 / (static_cast<double>(RAND_MAX) + 1.0);
+    return rand() * fraction * (max - min + 1) + min;
+}
 
 
-    Measure* messages[] = { &measure1, &measure2, &measure3, nullptr };
+void signal () {
+
+    Measure measure;
+    measure.timestamp = std::time(nullptr);
+    switch (train) {
+        case coming:
+            measure.lidar1_data = getRandomNumber(50,10000);
+            measure.lidar2_data = getRandomNumber(50,10000);
+            break;
+        case weel_1:
+            measure.lidar1_data = getRandomNumber(0,50);
+            measure.lidar2_data = getRandomNumber(0,50);
+            break;
+        case gap:
+            measure.lidar1_data = getRandomNumber(50,10000);
+            measure.lidar2_data = getRandomNumber(50,10000);
+            break;
+        case weel_2:
+            measure.lidar1_data = getRandomNumber(0,50);
+            measure.lidar2_data = getRandomNumber(0,50);
+            break;
+        case gone:
+            measure.lidar1_data = getRandomNumber(50,10000);
+            measure.lidar2_data = getRandomNumber(50,10000);
+            break;
+    }
 
     boost::thread_group threads;
-    for ( Measure ** message = messages; *message; ++message) {
-        threads.create_thread( boost::bind(sync_echo, **message));
-        boost::this_thread::sleep( boost::posix_time::millisec(100));
-    }
+    threads.create_thread(boost::bind(sync_echo, measure));
     threads.join_all();
+}
+
+void lidarSumulator(int V, int A, int B, int C, int D) {
+    int t1 = C / V,
+            t2 = A / V,
+            t3 = B / V,
+            t4 = C / V,
+            t5 = D / V,
+            total = t1 + t2 + t3 + t4 + t5;
+
+    train = coming;
+    std::time_t start_time = std::time(nullptr);
+    std::time_t cur_time;
+    while (train == coming) {
+        signal();
+        boost::this_thread::sleep( boost::posix_time::millisec(50));
+        cur_time = std::time(nullptr);
+        if (t1 <= start_time - cur_time) {
+            train = weel_1;
+        }
+    }
+    while (train == weel_1) {
+        signal();
+        boost::this_thread::sleep( boost::posix_time::millisec(50));
+        cur_time = std::time(nullptr);
+        if (t2 <= start_time - cur_time) {
+            train = gap;
+        }
+    }
+    while (train == gap) {
+        signal();
+        boost::this_thread::sleep( boost::posix_time::millisec(50));
+        cur_time = std::time(nullptr);
+        if (t3 <= start_time - cur_time) {
+            train = weel_2;
+        }
+    }
+    while (train == weel_2) {
+        signal();
+        boost::this_thread::sleep( boost::posix_time::millisec(50));
+        cur_time = std::time(nullptr);
+        if (t4 <= start_time - cur_time) {
+            train = gone;
+        }
+    }
+    while (train == gone) {
+        signal();
+        boost::this_thread::sleep( boost::posix_time::millisec(50));
+        cur_time = std::time(nullptr);
+        if (t5 <= start_time - cur_time) {
+            train = stop;
+        }
+    }
+    std::cout << total;
+}
+
+int main(int argc, char* argv[]) {
+    lidarSumulator(90, 0.5, 3, 3, 0.5);
+
 }
 
 

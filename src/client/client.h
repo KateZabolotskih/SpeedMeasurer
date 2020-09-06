@@ -11,4 +11,16 @@ struct Measure {
     float lidar2_data;
 };
 
+enum {
+    coming,
+    weel_1,
+    weel_2,
+    gap,
+    gone,
+    stop
+}train;
+
+
+
+
 #endif //SPEEDMEASURER_CLIENT_H
