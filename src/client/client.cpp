@@ -89,13 +89,20 @@ void signal () {
     threads.join_all();
 }
 
-void lidarSumulator(int V, int A, int B, int C, int D) {
-    int t1 = C / V,
+void lidarSumulator (float V, float A, float B, float C, float D) {
+    float t1 = C / V,
             t2 = A / V,
             t3 = B / V,
             t4 = C / V,
             t5 = D / V,
             total = t1 + t2 + t3 + t4 + t5;
+
+    std::cout << t1 << " "
+                << t2 << " "
+                << t3 << " "
+                << t4 << " "
+                << t5 << " "
+                << total;
 
     train = coming;
     std::time_t start_time = std::time(nullptr);
@@ -144,7 +151,7 @@ void lidarSumulator(int V, int A, int B, int C, int D) {
 }
 
 int main(int argc, char* argv[]) {
-    lidarSumulator(90, 0.5, 3, 3, 0.5);
+    lidarSumulator(90, 3, 0.5, 3, 0.5);
 
 }
 
