@@ -102,19 +102,22 @@ void lidarSumulator (float V, float A, float B, float C, float D) {
                 << t3 << " "
                 << t4 << " "
                 << t5 << " "
-                << total;
+                << total << std::endl;
 
     train = coming;
-    std::time_t start_time = std::time(nullptr);
-    std::time_t cur_time;
+    long start_time = clock();
+    std::cout << "start time" << (float)start_time / CLOCKS_PER_SEC << std::endl;
     while (train == coming) {
-        signal();
+        //signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        cur_time = std::time(nullptr);
-        if (t1 <= start_time - cur_time) {
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
+        std::cout << "delta=" << delta << std::endl;
+        if (t1 <= delta) {
             train = weel_1;
         }
     }
+
+    auto cur_time = std::time(nullptr);
     while (train == weel_1) {
         signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
