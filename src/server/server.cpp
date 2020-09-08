@@ -45,7 +45,7 @@ void onResult(result result) {
 void handle_connections() {
     bool flag = true;
     ip::tcp::acceptor acceptor(service, ip::tcp::endpoint(ip::tcp::v4(),8001));
-    auto * filter = (StreamFilter *)new StreamFloatMedianFilter(3);
+    auto * filter = (StreamFilter *)new StreamFloatMedianFilter(1);
     DefaultSpeedMeasurerManager manager(onResult);
     SpeedMeasurer * measurer1 = (SpeedMeasurer *)new SingleLidarSpeedMeasurer(filter, onResult);
     measurer1->setB(45);
@@ -69,7 +69,6 @@ void handle_connections() {
         if (false) { flag = false;}
 
         manager.addMeasuring(measure);
-        std::cout << measure;
         std::ostream out(&bufOut);
         out << measure << std::endl;
         write(sock, bufOut);

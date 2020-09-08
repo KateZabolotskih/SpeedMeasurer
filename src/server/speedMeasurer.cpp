@@ -12,12 +12,14 @@ void SingleLidarSpeedMeasurer::addMeasuring(measure m) {
         switch (state) {
             case WAIT_4_WHEEL:
                 if (isWheelAppear(m)) {
+                    cout << "wheel appear time=" << m.timestamp << endl;
                     appearanceTime = (m.timestamp + measures.back().timestamp) / 2;
                     state = WHEEL_APPEAR;
                 }
                 break;
             case WHEEL_APPEAR:
                 if (isWheelDisappear(m)) {
+                    cout << "wheel disappear time=" << m.timestamp << endl;
                     disappearanceTime = (m.timestamp + measures.back().timestamp) / 2;
                     state = WHEEL_DISAPPEAR;
                 }
@@ -48,7 +50,7 @@ void SingleLidarSpeedMeasurer::countSpeed() {
     std::cout << "time appearance = " << appearanceTime << std::endl;
     std::cout << "time disappearance = " << disappearanceTime << std::endl;
     std::cout << "diameter = " << D << std::endl;
-    float speed = (float)(disappearanceTime - appearanceTime) / D;
+    float speed = (float)(disappearanceTime - appearanceTime) / CLOCKS_PER_SEC / D * 1000;
     float accurate = 0;
     result result = {
             SUCCESS,

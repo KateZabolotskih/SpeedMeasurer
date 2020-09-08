@@ -18,10 +18,15 @@ bool StreamFloatMedianFilter::getData(measure & data) {
 }
 
 void StreamFloatMedianFilter::addData(measure data) {
-    for(auto data : buffer) {
-        std::cout << data.data << " ";
-    } std::cout << std::endl;
     buffer.push_back(data);
-    if (buffer.size() > 2 * r + 1)
+    if (buffer.size() > 2 * r + 1) {
         buffer.erase(buffer.begin());
+    }
+    for(auto data : buffer) {
+        if (data.data < 50) {
+            std::cout << "wheel(" << data.timestamp << ", " << data.data << ") ";
+        } else {
+            std::cout << "nothing(" << data.timestamp << ", " << data.data << ") ";
+        }
+    } std::cout << std::endl;
 }
