@@ -58,10 +58,10 @@ float getRandomNumber(float min, float max) {
 
 static int counter = 0;
 
-void signal () {
+void signal (long current_time) {
     counter++;
     Measure measure;
-    measure.timestamp = std::time(nullptr);
+    measure.timestamp = current_time;
     switch (train) {
         case coming:
             measure.data = getRandomNumber(50,10000);
@@ -90,12 +90,12 @@ void signal () {
     threads.join_all();
 }
 
-void lidarSumulator (float V, float A, float B, float C, float D) {
-    float t1 = C / V / 1000.f,
-            t2 = A / V / 1000.f,
-            t3 = B / V / 1000.f,
-            t4 = D / V / 1000.f,
-            total = t1 + t2 + t3 + t4;
+void lidarSumulator (float V, float wheel_size, float between_wheel, float before_wheels, float after_wheel) {
+    float t1 = before_wheels / V / 1000.f,
+            t2 = wheel_size / V / 1000.f,
+            t3 = between_wheel / V / 1000.f,
+            t4 = after_wheel / V / 1000.f,
+            total = t1 + t2 + t3 + t2 + t4;
 
     std::cout << t1 << " "
                 << t2 << " "
@@ -107,35 +107,44 @@ void lidarSumulator (float V, float A, float B, float C, float D) {
     long start_time = clock();
     std::cout << "start time " << (float)start_time / CLOCKS_PER_SEC << std::endl;
 
+    long last_time, current_time = clock();
     while (train != stop) {
-        signal();
-        boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC;
-        //std::cout << "1. delta=" << delta << std::endl;
-        if (t1 <= delta) {
-            std::cout << "wheel 1 time = " << std::time(nullptr) << std::endl;
-            train = weel_1;
-        }
-        if (t1 + t2 <= delta) {
-            train = gap;
-        }
-        if (t1 + t2 + t3 <= delta) {
-            train = weel_2;
-        }
+        last_time = current_time;
+        current_time = clock();
 
-        if (t1 + t2 + t3 + t4 <= delta) {
-            train = gone;
-        }
-        if (total + 0.1f <= delta) {
+        long sleep_time = 50 - (current_time - last_time) / CLOCKS_PER_SEC;
+        std::cout << "last_time = " << last_time << " current_time " << current_time << std::endl;
+        std::cout << "sleep_time = " << sleep_time << std::endl;
+        boost::this_thread::sleep( boost::posix_time::millisec(sleep_time));
+        float delta = ((float)(current_time - start_time)) / CLOCKS_PER_SEC;
+        //std::cout << "1. delta=" << delta << std::endl;
+        if (t1 + t2 + t3 + t2 + t4 <= delta) {
+            std::cout << "stop" << " current time = " << current_time << std::endl;
             train = stop;
+        } else if (t1 + t2 + t3 + t2 <= delta) {
+            std::cout << "gone" << " current time = " << current_time << std::endl;
+            train = gone;
+        } else if (t1 + t2 + t3 <= delta) {
+            std::cout << "weel 2" << " current time = " << current_time << std::endl;
+            train = weel_2;
+        } else if (t1 + t2 <= delta) {
+            std::cout << "gap" << " current time = " << current_time << std::endl;
+            train = gap;
+        } else if (t1 <= delta) {
+            std::cout << "wheel 1" << " current time = " << current_time << std::endl;
+            train = weel_1;
+        } else {
+            std::cout << "prepare" << "cuurent time = " << current_time << std::endl;
         }
+        signal(current_time);
     }
 
-    std::cout << total;
+    std::cout << "total=" << total << std::endl;
 }
 
 int main(int argc, char* argv[]) {
-    lidarSumulator(1, 3, 0.5, 3, 0.5);
+    std::cout << "CLOCK_PER_SEC=" << CLOCKS_PER_SEC << std::endl;
+    lidarSumulator(1, 1, 3, 3, 3);
     std::cout << "counter="<< counter << std::endl;
 }
 
