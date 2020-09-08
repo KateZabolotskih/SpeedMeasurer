@@ -2,50 +2,57 @@
 // Created by Екатерина Заболотских on 06.09.2020.
 //
 
+
+
+
 #ifndef SPEEDMEASURER_SPEEDMEASURER_H
 #define SPEEDMEASURER_SPEEDMEASURER_H
 
+#include "filter.h"
+#include <cstdint>
 
-
-#ifndef RAILWAYS_SPEADMEASURER_H
-#define RAILWAYS_SPEADMEASURER_H
-
-
-struct measure {
-
-};
-
-class speedMeasurer {
+class SpeedMeasurer {
+protected:
     float D;
     float S;
+    float L;
     float B;
+    float BRange;
+    StreamFilter * filter;
 public:
-    speedMeasurer(float D, float S, float B) : D(D), S(S), B(B) {};
-    virtual void addMeasuring(measure m);
-    virtual void resultCallback(void (*callback)(float));
+    SpeedMeasurer(StreamFilter * filter) : filter(filter) {};
+    virtual void addMeasuring(measure m) = 0;
+    void setD(float D);
+    void setL(float L);
+    void setB(float B);
+    void setBRange(float BRange);
 };
 
-class SimpleLidarSpeedMeasurer : speedMeasurer {
-    unsigned long firstAppearanceTime;
-    unsigned long lastAppearanceTime;
+class SingleLidarSpeedMeasurer : SpeedMeasurer {
+    enum {WAIT_4_WHEEL, WHEEL_APPEAR, WHEEL_DISAPPEAR} state;
+
+    uint32_t appearanceTime;
+    uint32_t disappearanceTime;
+    void (*callback) (result result);
+    vector<measure> measures;
+
+    bool isWheelAppear(measure & m);
+    bool isWheelDisappear(measure & m);
+    void countSpeed();
 public:
-    SimpleLidarSpeedMeasurer(float D, float S, float B, int lidarNumber);
+    SingleLidarSpeedMeasurer(StreamFilter* filter, void (*callback)(result result))
+                            : SpeedMeasurer(filter), callback(callback), state(WAIT_4_WHEEL) {}
     void addMeasuring(measure m) override;
-    void resultCallback(void (*callback)(float)) override;
+
 };
 
-class BothLidarSpeedMeasurer : speedMeasurer {
+class BothLidarSpeedMeasurer : SpeedMeasurer {
     unsigned long firstLidarAppearanceTime;
     unsigned long secondLidarAppearanceTime;
 public:
-    BothLidarSpeedMeasurer(float D, float S, float B);
+    BothLidarSpeedMeasurer(float D, float S, float L, StreamFilter * filter) : SpeedMeasurer(filter) {}
     void addMeasuring(measure m) override;
-    void resultCallback(void (*callback)(float)) override;
 };
-
-
-
-#endif //RAILWAYS_SPEADMEASURER_H
 
 
 #endif //SPEEDMEASURER_SPEEDMEASURER_H

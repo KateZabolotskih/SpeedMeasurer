@@ -20,13 +20,13 @@ io_service service;
 std::ostream& operator<<(std::ostream & out, const Measure & measure)
 {
     return out << measure.timestamp
-               << " " << measure.lidar1_data
-               << " " << measure.lidar2_data
+               << " " << measure.lidarNumber
+               << " " << measure.data
                << std::endl;
 }
 std::istream& operator>>(std::istream & in, Measure & measure)
 {
-    return in >> measure.timestamp >> measure.lidar1_data >> measure.lidar2_data;
+    return in >> measure.timestamp >> measure.lidarNumber >> measure.data;
 }
 
 ip::tcp::endpoint ep( ip::address::from_string("127.0.0.1"), 8001);
@@ -47,7 +47,7 @@ void sync_echo(Measure & measure) {
     in >> measure1;
 
 
-    std::cout << "server echoed our " << measure1 << ("OK") << std::endl;
+    //std::cout << "server echoed our " << measure1 << ("OK") << std::endl;
     sock.close();
 }
 
@@ -56,31 +56,32 @@ float getRandomNumber(float min, float max) {
     return rand() * fraction * (max - min + 1) + min;
 }
 
+static int counter = 0;
 
 void signal () {
-
+    counter++;
     Measure measure;
     measure.timestamp = std::time(nullptr);
     switch (train) {
         case coming:
-            measure.lidar1_data = getRandomNumber(50,10000);
-            measure.lidar2_data = getRandomNumber(50,10000);
+            measure.data = getRandomNumber(50,10000);
+            measure.lidarNumber = getRandomNumber(1,2);
             break;
         case weel_1:
-            measure.lidar1_data = getRandomNumber(0,50);
-            measure.lidar2_data = getRandomNumber(0,50);
+            measure.data = getRandomNumber(40,50);
+            measure.lidarNumber = getRandomNumber(1,2);
             break;
         case gap:
-            measure.lidar1_data = getRandomNumber(50,10000);
-            measure.lidar2_data = getRandomNumber(50,10000);
+            measure.data = getRandomNumber(50,10000);
+            measure.lidarNumber = getRandomNumber(1,2);
             break;
         case weel_2:
-            measure.lidar1_data = getRandomNumber(0,50);
-            measure.lidar2_data = getRandomNumber(0,50);
+            measure.data = getRandomNumber(40,50);
+            measure.lidarNumber = getRandomNumber(1,2);
             break;
         case gone:
-            measure.lidar1_data = getRandomNumber(50,10000);
-            measure.lidar2_data = getRandomNumber(50,10000);
+            measure.data = getRandomNumber(50,10000);
+            measure.lidarNumber = getRandomNumber(1,2);
             break;
     }
 
@@ -90,76 +91,52 @@ void signal () {
 }
 
 void lidarSumulator (float V, float A, float B, float C, float D) {
-    float t1 = C / V,
-            t2 = A / V,
-            t3 = B / V,
-            t4 = C / V,
-            t5 = D / V,
-            total = t1 + t2 + t3 + t4 + t5;
+    float t1 = C / V / 1000.f,
+            t2 = A / V / 1000.f,
+            t3 = B / V / 1000.f,
+            t4 = D / V / 1000.f,
+            total = t1 + t2 + t3 + t4;
 
     std::cout << t1 << " "
                 << t2 << " "
                 << t3 << " "
                 << t4 << " "
-                << t5 << " "
                 << total << std::endl;
 
     train = coming;
     long start_time = clock();
-    std::cout << "start time" << (float)start_time / CLOCKS_PER_SEC << std::endl;
-    while (train == coming) {
-        //signal();
+    std::cout << "start time " << (float)start_time / CLOCKS_PER_SEC << std::endl;
+
+    while (train != stop) {
+        signal();
         boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
-        std::cout << "delta=" << delta << std::endl;
+        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC;
+        //std::cout << "1. delta=" << delta << std::endl;
         if (t1 <= delta) {
+            std::cout << "wheel 1 time = " << std::time(nullptr) << std::endl;
             train = weel_1;
         }
-    }
-
-    auto cur_time = std::time(nullptr);
-    while (train == weel_1) {
-        signal();
-        boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
-        std::cout << "delta=" << delta << std::endl;
-        if (t1 <= delta) {
+        if (t1 + t2 <= delta) {
             train = gap;
         }
-    }
-    while (train == gap) {
-        signal();
-        boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
-        std::cout << "delta=" << delta << std::endl;
-        if (t1 <= delta) {
+        if (t1 + t2 + t3 <= delta) {
             train = weel_2;
         }
-    }
-    while (train == weel_2) {
-        signal();
-        boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
-        std::cout << "delta=" << delta << std::endl;
-        if (t1 <= delta) {
+
+        if (t1 + t2 + t3 + t4 <= delta) {
             train = gone;
         }
-    }
-    while (train == gone) {
-        signal();
-        boost::this_thread::sleep( boost::posix_time::millisec(50));
-        float delta = ((float)(clock() - start_time)) / CLOCKS_PER_SEC * 1000;
-        std::cout << "delta=" << delta << std::endl;
-        if (t1 <= delta) {
+        if (total + 0.1f <= delta) {
             train = stop;
         }
     }
+
     std::cout << total;
 }
 
 int main(int argc, char* argv[]) {
-    lidarSumulator(1000, 3, 0.5, 3, 0.5);
-
+    lidarSumulator(1, 3, 0.5, 3, 0.5);
+    std::cout << "counter="<< counter << std::endl;
 }
 
 

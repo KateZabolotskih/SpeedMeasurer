@@ -7,8 +7,8 @@
 
 struct Measure {
     uint32_t timestamp;
-    float lidar1_data;
-    float lidar2_data;
+    int lidarNumber;
+    float data;
 };
 
 enum {
