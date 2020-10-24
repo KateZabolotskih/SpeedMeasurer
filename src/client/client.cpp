@@ -113,8 +113,8 @@ void lidarSumulator (float V, float wheel_size, float between_wheel, float befor
         current_time = clock();
 
         long sleep_time = 50 - (current_time - last_time) / CLOCKS_PER_SEC;
-        std::cout << "last_time = " << last_time << " current_time " << current_time << std::endl;
-        std::cout << "sleep_time = " << sleep_time << std::endl;
+        //std::cout << "last_time = " << last_time << " current_time " << current_time << std::endl;
+        //std::cout << "sleep_time = " << sleep_time << std::endl;
         boost::this_thread::sleep( boost::posix_time::millisec(sleep_time));
         float delta = ((float)(current_time - start_time)) / CLOCKS_PER_SEC;
         //std::cout << "1. delta=" << delta << std::endl;
