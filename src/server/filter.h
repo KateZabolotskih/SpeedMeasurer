@@ -6,7 +6,7 @@
 #define SPEEDMEASURER_FILTER_H
 
 #include <vector>
-#include "models.h"
+#include "models/models.h"
 
 using namespace std;
 
