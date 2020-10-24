@@ -8,7 +8,7 @@
 #ifndef SPEEDMEASURER_SPEEDMEASURER_H
 #define SPEEDMEASURER_SPEEDMEASURER_H
 
-#include "filter.h"
+#include "../filter.h"
 #include <cstdint>
 
 class SpeedMeasurer {
@@ -47,8 +47,22 @@ public:
 };
 
 class BothLidarSpeedMeasurer : SpeedMeasurer {
-    unsigned long firstLidarAppearanceTime;
-    unsigned long secondLidarAppearanceTime;
+    enum {WAIT_4_WEELSET,
+            FIRST_LIDAR_CATCH, SECOND_LIDAR_CATCH} state;
+    enum {CUR, NEXT} weelset;
+
+
+    int firstLidarNumber;
+    int secondLidarNumber;
+    uint32_t firstLidarAppearanceTime;
+    uint32_t secondLidarAppearanceTime;
+    void (*callback) (result result);
+    vector<measure> measures;
+
+    bool isWheelSetAppear_1(measure & m);
+    bool isWheelSetAppear_2(measure & m);
+    bool isWheelSetDisappear_2(measure & m);
+    void countSpeed();
 public:
     BothLidarSpeedMeasurer(float D, float S, float L, StreamFilter * filter) : SpeedMeasurer(filter) {}
     void addMeasuring(measure m) override;
