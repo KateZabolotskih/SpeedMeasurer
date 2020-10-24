@@ -10,7 +10,7 @@
 #include <boost/enable_shared_from_this.hpp>
 
 #include "speedMeasurerManager.h"
-#include "speedMeasurer.h"
+#include "measurers/speedMeasurer.h"
 
 #define D 0.5f
 #define S 3.f

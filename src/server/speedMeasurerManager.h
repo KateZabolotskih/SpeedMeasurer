@@ -6,7 +6,7 @@
 #define SPEEDMEASURER_SPEEDMEASURERMANAGER_H
 
 #include <vector>
-#include "speedMeasurer.h"
+#include "measurers/speedMeasurer.h"
 
 using namespace std;
 
